@@ -1,12 +1,12 @@
 package me.ichun.mods.beebarker.client.core;
 
+import me.ichun.mods.ichunutil.common.core.util.EntityHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.util.ArrayList;
 
@@ -22,11 +22,11 @@ public class TickHandlerClient
             {
                 prevYaw = currentYaw;
                 prevPitch = currentPitch;
-                currentYaw = EntityHelperBase.updateRotation(currentYaw, targetYaw, 10F);
-                currentPitch = EntityHelperBase.updateRotation(currentPitch, targetPitch, 10F);
+                currentYaw = EntityHelper.updateRotation(currentYaw, targetYaw, 10F);
+                currentPitch = EntityHelper.updateRotation(currentPitch, targetPitch, 10F);
                 if(pullTime > 0)
                 {
-                    if(!(pressState.contains(mc.thePlayer.getCommandSenderName()) && pullTime == 7))
+                    if(!(pressState.contains(mc.thePlayer.getName()) && pullTime == 7))
                     {
                         pullTime--;
                     }
@@ -52,10 +52,10 @@ public class TickHandlerClient
     @SubscribeEvent
     public void onPlayerTick(TickEvent.PlayerTickEvent event)
     {
-        if(event.phase == TickEvent.Phase.END && event.side.isClient() && pressState.contains(event.player.getCommandSenderName()))
+        if(event.phase == TickEvent.Phase.END && event.side.isClient() && pressState.contains(event.player.getName()))
         {
-            Vec3 look = event.player.getLookVec();
-            Vec3 pos;
+            Vec3d look = event.player.getLookVec();
+            Vec3d  pos;
             if(event.player == Minecraft.getMinecraft().getRenderViewEntity() && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) //is first person
             {
                 pos = event.player.getPositionVector().addVector(look.xCoord * 1.5D - look.zCoord * 0.75D, look.yCoord * 1.5D + 1.15D, look.zCoord * 1.5D + look.xCoord * 0.75D);

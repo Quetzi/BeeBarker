@@ -5,11 +5,12 @@ import me.ichun.mods.beebarker.common.BeeBarker;
 import me.ichun.mods.beebarker.common.core.CommonProxy;
 import me.ichun.mods.beebarker.common.entity.EntityBee;
 import me.ichun.mods.beebarker.common.item.ItemBeeBarker;
+import me.ichun.mods.ichunutil.client.render.item.ItemRenderingHelper;
+import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import us.ichun.mods.ichunutil.common.iChunUtil;
 
 public class ClientProxy extends CommonProxy
 {
@@ -31,8 +32,8 @@ public class ClientProxy extends CommonProxy
 
         Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(BeeBarker.itemBeeBarker, 0, new ModelResourceLocation("beebarker:BeeBarker", "inventory"));
 
-        iChunUtil.proxy.tickHandlerClient.registerBowAnimationLockedItem(ItemBeeBarker.class);
-        iChunUtil.proxy.tickHandlerClient.registerSwingProofItem(new us.ichun.mods.ichunutil.client.core.TickHandlerClient.SwingProofHandler(ItemBeeBarker.class, new EquipBeeBarkerHandler()));
+        ItemRenderingHelper.registerBowAnimationLockedItem(ItemBeeBarker.class);
+        ItemRenderingHelper.registerSwingProofItem(new ItemRenderingHelper.SwingProofHandler(ItemBeeBarker.class, new EquipBeeBarkerHandler()));
 
         RenderingRegistry.registerEntityRenderingHandler(EntityBee.class, new RenderBee());
     }

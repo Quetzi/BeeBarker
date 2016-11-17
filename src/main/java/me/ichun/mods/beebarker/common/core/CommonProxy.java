@@ -14,7 +14,7 @@ public class CommonProxy
 {
     public void preInit()
     {
-        BeeBarker.itemBeeBarker = GameRegistry.registerItem((new ItemBeeBarker()).setFull3D().setUnlocalizedName("BeeBarker").setCreativeTab(CreativeTabs.tabTools), "BeeBarker", BeeBarker.MOD_NAME);
+        BeeBarker.itemBeeBarker = GameRegistry.registerItem((new ItemBeeBarker()).setFull3D().setUnlocalizedName("BeeBarker").setCreativeTab(CreativeTabs.TOOLS), "BeeBarker", BeeBarker.MOD_NAME);
 
         MinecraftForge.EVENT_BUS.register(new EventHandler());
     }

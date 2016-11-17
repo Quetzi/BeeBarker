@@ -7,6 +7,9 @@ import me.ichun.mods.beebarker.common.entity.EntityBee;
 import me.ichun.mods.beebarker.common.item.ItemBeeBarker;
 import me.ichun.mods.beebarker.common.packet.PacketBark;
 import me.ichun.mods.beebarker.common.packet.PacketSpawnParticles;
+import me.ichun.mods.ichunutil.client.keybind.KeyEvent;
+import me.ichun.mods.ichunutil.client.model.itemblock.PerspectiveAwareModelBaseWrapper;
+import me.ichun.mods.ichunutil.common.iChunUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.client.Minecraft;
@@ -19,20 +22,20 @@ import net.minecraft.entity.monster.EntityZombie;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.event.entity.PlaySoundAtEntityEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.entity.player.EntityInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import us.ichun.mods.ichunutil.client.keybind.KeyEvent;
-import us.ichun.mods.ichunutil.client.model.itemblock.PerspectiveAwareModelBaseWrapper;
-import us.ichun.mods.ichunutil.common.iChunUtil;
 
 public class EventHandler
 {
@@ -45,7 +48,7 @@ public class EventHandler
     public void onModelBake(ModelBakeEvent event)
     {
         ((ItemBeeBarker)BeeBarker.itemBeeBarker).renderer = new ItemRenderBeeBarker();
-        event.modelRegistry.putObject(new ModelResourceLocation("beebarker:BeeBarker", "inventory"), new PerspectiveAwareModelBaseWrapper(((ItemBeeBarker)BeeBarker.itemBeeBarker).renderer));
+        event.getModelRegistry().putObject(new ModelResourceLocation("beebarker:BeeBarker", "inventory"), new PerspectiveAwareModelBaseWrapper(((ItemBeeBarker)BeeBarker.itemBeeBarker).renderer));
     }
 
     @SideOnly(Side.CLIENT)
@@ -73,7 +76,7 @@ public class EventHandler
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent event)
     {
-        if(event.getPlayer().getHeldItem() != null && event.getPlayer().getHeldItem().getItem() instanceof ItemBeeBarker)
+        if(event.getPlayer().getHeldItem(EnumHand.MAIN_HAND) != null && event.getPlayer().getHeldItem(EnumHand.MAIN_HAND).getItem() instanceof ItemBeeBarker)
         {
             event.setCanceled(true);
         }
@@ -82,10 +85,10 @@ public class EventHandler
     @SubscribeEvent
     public void onLivingUpdate(LivingEvent.LivingUpdateEvent event)
     {
-        if(!event.entityLiving.worldObj.isRemote && event.entityLiving instanceof EntityZombie)
+        if(!event.getEntityLiving().worldObj.isRemote && event.getEntityLiving() instanceof EntityZombie)
         {
-            EntityZombie zombie = (EntityZombie)event.entityLiving;
-            if(zombie.getHeldItem() != null && zombie.getHeldItem().getItem() == BeeBarker.itemBeeBarker)
+            EntityZombie zombie = (EntityZombie)event.getEntityLiving();
+            if(zombie.getHeldItem(EnumHand.MAIN_HAND) != null && zombie.getHeldItem(EnumHand.MAIN_HAND).getItem() == BeeBarker.itemBeeBarker)
             {
                 if(zombie.getRNG().nextFloat() < 0.008F)
                 {
@@ -98,9 +101,9 @@ public class EventHandler
     @SubscribeEvent
     public void onPlaySoundAtEntity(PlaySoundAtEntityEvent event)
     {
-        if(event.entity instanceof EntityWolf && event.name.equals("mob.wolf.bark") && !event.entity.worldObj.isRemote)
+        if(event.getEntity() instanceof EntityWolf && event.getSound().equals("mob.wolf.bark") && !event.getEntity().worldObj.isRemote)
         {
-            EntityWolf wolf = (EntityWolf)event.entity;
+            EntityWolf wolf = (EntityWolf)event.getEntity();
             NBTTagCompound wolfData = wolf.getEntityData();
             if(wolfData.getBoolean(BARKABLE_STRING) && wolf.getRNG().nextFloat() < 0.05F)
             {
@@ -114,14 +117,14 @@ public class EventHandler
 
     //Test the entity interact
     @SubscribeEvent
-    public void onEntityInteract(EntityInteractEvent event)
+    public void onEntityInteract(PlayerInteractEvent.EntityInteract event)
     {
-        if(event.target instanceof EntityWolf)
+        if(event.getTarget() instanceof EntityWolf)
         {
-            EntityWolf wolf = (EntityWolf)event.target;
-            if(wolf.isTamed() && !wolf.isInvisible() && wolf.getOwner() == event.entityPlayer && !event.entityPlayer.isSneaking())
+            EntityWolf wolf = (EntityWolf)event.getTarget();
+            if(wolf.isTamed() && !wolf.isInvisible() && wolf.getOwner() == event.getEntityPlayer() && !event.getEntityPlayer().isSneaking())
             {
-                ItemStack is = event.entityPlayer.getHeldItem();
+                ItemStack is = event.getEntityPlayer().getHeldItem(EnumHand.MAIN_HAND);
                 boolean forestryCheck = false; //Check if the item is a forestry bee.
                 if(BeeBarker.isForestryInstalled)
                 {
@@ -140,7 +143,7 @@ public class EventHandler
                     NBTTagCompound wolfData = wolf.getEntityData();
                     if(wolfData.getBoolean(BARKABLE_STRING))
                     {
-                        if(!event.entityPlayer.worldObj.isRemote)
+                        if(!event.getEntityPlayer().worldObj.isRemote)
                         {
                             NBTTagCompound wolfTag = new NBTTagCompound();
                             wolfData.setInteger(BEE_HIGHEST_CHARGE, wolfData.getInteger(BEE_CHARGE_STRING));
@@ -149,8 +152,8 @@ public class EventHandler
                             ItemStack wolfStack = new ItemStack(BeeBarker.itemBeeBarker, 1, wolfData.getBoolean("IsSuperBeeDog") ? 0 : wolfData.getInteger(BEE_CHARGE_STRING) == 0 ? 250 : 1); //1 damage so you can see the damage bar.
                             wolfStack.setTagCompound(new NBTTagCompound());
                             wolfStack.getTagCompound().setTag(ItemBeeBarker.WOLF_DATA_STRING, wolfTag);
-                            event.entityPlayer.setCurrentItemOrArmor(0, wolfStack);
-                            event.entityPlayer.inventory.markDirty();
+                            event.getEntityPlayer().setHeldItem(EnumHand.MAIN_HAND, wolfStack);
+                            event.getEntityPlayer().inventory.markDirty();
                             wolf.setDead();
                         }
                         event.setCanceled(true);
@@ -159,37 +162,37 @@ public class EventHandler
                 else if(Block.getBlockFromItem(is.getItem()) instanceof BlockFlower || forestryCheck)
                 {
                     NBTTagCompound wolfData = wolf.getEntityData();
-                    if(!event.entityPlayer.worldObj.isRemote && !event.entityPlayer.capabilities.isCreativeMode)
+                    if(!event.getEntityPlayer().worldObj.isRemote && !event.getEntityPlayer().capabilities.isCreativeMode)
                     {
                         is.stackSize--;
                         if(is.stackSize <= 0)
                         {
-                            event.entityPlayer.inventory.mainInventory[event.entityPlayer.inventory.currentItem] = null;
-                            event.entityPlayer.inventory.markDirty();
+                            event.getEntityPlayer().inventory.mainInventory[event.getEntityPlayer().inventory.currentItem] = null;
+                            event.getEntityPlayer().inventory.markDirty();
                         }
                     }
 
-                    if(!event.entityPlayer.worldObj.isRemote)
+                    if(!event.getEntityPlayer().worldObj.isRemote)
                     {
-                        float chance = forestryCheck ? 0.0F : event.entityPlayer.getRNG().nextFloat(); //If forestryCheck, change = 0, bee will be added.
+                        float chance = forestryCheck ? 0.0F : event.getEntityPlayer().getRNG().nextFloat(); //If forestryCheck, change = 0, bee will be added.
                         if(wolfData.getBoolean("IsSuperBeeDog") || wolfData.getBoolean(BARKABLE_STRING) && wolfData.getInteger(BEE_CHARGE_STRING) >= BeeBarker.config.maxBeeCharge)
                         {
-                            wolf.playSound("mob.wolf.whine", 0.4F, (wolf.getRNG().nextFloat() - wolf.getRNG().nextFloat()) * 0.2F + 1F);
+                            wolf.playSound(new SoundEvent(new ResourceLocation("mob.wolf.whine")), 0.4F, (wolf.getRNG().nextFloat() - wolf.getRNG().nextFloat()) * 0.2F + 1F);
                         }
                         else
                         {
                             if(chance < BeeBarker.config.beeBarkerChance / 100F)
                             {
-                                BeeBarker.channel.sendToAllAround(new PacketSpawnParticles(wolf.getEntityId(), event.entityPlayer.getEntityId(), false), new NetworkRegistry.TargetPoint(wolf.dimension, wolf.posX, wolf.posY, wolf.posZ, 64D));
+                                BeeBarker.channel.sendToAllAround(new PacketSpawnParticles(wolf.getEntityId(), event.getEntityPlayer().getEntityId(), false), new NetworkRegistry.TargetPoint(wolf.dimension, wolf.posX, wolf.posY, wolf.posZ, 64D));
                                 wolfData.setBoolean(BARKABLE_STRING, true);
                                 wolfData.setInteger(BEE_CHARGE_STRING, wolfData.getInteger(BEE_CHARGE_STRING) + 1);
                                 wolfData.setInteger(BEE_HIGHEST_CHARGE, wolfData.getInteger(BEE_CHARGE_STRING));
                             }
                             else
                             {
-                                BeeBarker.channel.sendToAllAround(new PacketSpawnParticles(wolf.getEntityId(), event.entityPlayer.getEntityId(), true), new NetworkRegistry.TargetPoint(wolf.dimension, wolf.posX, wolf.posY, wolf.posZ, 64D));
+                                BeeBarker.channel.sendToAllAround(new PacketSpawnParticles(wolf.getEntityId(), event.getEntityPlayer().getEntityId(), true), new NetworkRegistry.TargetPoint(wolf.dimension, wolf.posX, wolf.posY, wolf.posZ, 64D));
                             }
-                            wolf.playSound("random.burp", 0.3F, 1.0F + (wolf.getRNG().nextFloat() - wolf.getRNG().nextFloat()) * 0.2F);
+                            wolf.playSound(new SoundEvent(new ResourceLocation("random.burp")), 0.3F, 1.0F + (wolf.getRNG().nextFloat() - wolf.getRNG().nextFloat()) * 0.2F);
                         }
                     }
                     event.setCanceled(true);
@@ -202,13 +205,13 @@ public class EventHandler
     @SubscribeEvent
     public void onLivingDrops(LivingDropsEvent event)
     {
-        if(!event.entityLiving.worldObj.isRemote)
+        if(!event.getEntityLiving().worldObj.isRemote)
         {
-            for(int i = event.drops.size() - 1; i >= 0; i--)
+            for(int i = event.getDrops().size() - 1; i >= 0; i--)
             {
-                if(spawnWolfFromItem(event.drops.get(i), null))
+                if(spawnWolfFromItem(event.getDrops().get(i), null))
                 {
-                    event.drops.remove(i);
+                    event.getDrops().remove(i);
                 }
             }
         }
@@ -217,9 +220,9 @@ public class EventHandler
     @SubscribeEvent
     public void onItemToss(ItemTossEvent event)
     {
-        if(!event.player.worldObj.isRemote)
+        if(!event.getPlayer().worldObj.isRemote)
         {
-            if(spawnWolfFromItem(event.entityItem, event.player))
+            if(spawnWolfFromItem(event.getEntityItem(), event.getPlayer()))
             {
                 event.setCanceled(true);
             }

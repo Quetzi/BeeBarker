@@ -5,16 +5,19 @@ import me.ichun.mods.beebarker.common.entity.EntityBee;
 import me.ichun.mods.beebarker.common.item.ItemBeeBarker;
 import me.ichun.mods.beebarker.common.packet.PacketKeyState;
 import me.ichun.mods.beebarker.common.packet.PacketSpawnParticles;
+import me.ichun.mods.ichunutil.common.core.util.EntityHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.*;
+import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import us.ichun.mods.ichunutil.common.core.EntityHelperBase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,14 +31,14 @@ public class BarkHelper
         float pitch = 1F;
         if(living instanceof EntityPlayer)
         {
-            Integer speed = cooldown.get(living.getCommandSenderName());
+            Integer speed = cooldown.get(living.getName());
             if(speed == null)
             {
                 speed = 0;
             }
             if(speed < 252)
             {
-                cooldown.put(living.getCommandSenderName(), speed + 8);
+                cooldown.put(living.getName(), speed + 8);
             }
 
             if(speed > 10)
@@ -45,7 +48,7 @@ public class BarkHelper
             }
 
             EntityPlayer player = (EntityPlayer)living;
-            ItemStack is = player.getHeldItem();
+            ItemStack is = player.getHeldItem(EnumHand.MAIN_HAND);
             if(is != null && is.getItem() instanceof ItemBeeBarker && is.getTagCompound() != null && is.getTagCompound().hasKey(ItemBeeBarker.WOLF_DATA_STRING) && !player.capabilities.isCreativeMode)
             {
                 NBTTagCompound tag = (NBTTagCompound)((NBTTagCompound)is.getTagCompound().getTag(ItemBeeBarker.WOLF_DATA_STRING)).getTag("ForgeData");
@@ -86,7 +89,7 @@ public class BarkHelper
                 {
                     if(e.getValue() > 120)
                     {
-                        EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerByUsername(e.getKey());
+                        EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(e.getKey());
                         if(player != null)
                         {
                             BeeBarker.channel.sendToAllAround(new PacketSpawnParticles(-1, player.getEntityId(), true), new NetworkRegistry.TargetPoint(player.dimension, player.posX, player.posY, player.posZ, 32D));
@@ -102,7 +105,7 @@ public class BarkHelper
             for(int i = pressState.size() - 1; i >= 0; i--)
             {
                 String name = pressState.get(i);
-                EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerByUsername(name);
+                EntityPlayer player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerByUsername(name);
                 if(player != null)
                 {
                     ItemStack is = player.getHeldItem();
@@ -110,11 +113,11 @@ public class BarkHelper
                     {
                         if(player.ticksExisted % 4 == 0)
                         {
-                            MovingObjectPosition mop = EntityHelperBase.getEntityLook(player, 6D);
-                            if(mop.typeOfHit == MovingObjectPosition.MovingObjectType.ENTITY && !mop.entityHit.isImmuneToFire())
+                            RayTraceResult rtr = EntityHelper.getEntityLook(player, 6D);
+                            if(rtr.typeOfHit == RayTraceResult.Type.ENTITY && !rtr.entityHit.isImmuneToFire())
                             {
-                                mop.entityHit.setFire(2);
-                                mop.entityHit.attackEntityFrom((new EntityDamageSourceIndirect("beeburnt", mop.entityHit, player)).setFireDamage(), 2);
+                                rtr.entityHit.setFire(2);
+                                rtr.entityHit.attackEntityFrom((new EntityDamageSourceIndirect("beeburnt", rtr.entityHit, player)).setFireDamage(), 2);
                             }
                         }
                         if(player.ticksExisted % 13 == 0)

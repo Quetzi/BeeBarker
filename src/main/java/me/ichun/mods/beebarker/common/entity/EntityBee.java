@@ -1,16 +1,22 @@
 package me.ichun.mods.beebarker.common.entity;
 
 import me.ichun.mods.beebarker.common.BeeBarker;
+import me.ichun.mods.ichunutil.common.iChunUtil;
 import me.ichun.mods.morph.api.MorphApi;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.*;
+import net.minecraft.util.EntityDamageSourceIndirect;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
-import us.ichun.mods.ichunutil.common.iChunUtil;
 
 import java.util.List;
 
@@ -32,17 +38,17 @@ public class EntityBee extends Entity
         this.shooter = shooter;
 
         EntityLivingBase renderedShooter = shooter;
-        if(iChunUtil.hasMorphMod && shooter instanceof EntityPlayer && MorphApi.getApiImpl().getMorphEntity(shooter.getEntityWorld(), shooter.getCommandSenderName(), Side.SERVER) != null)
+        if(iChunUtil.hasMorphMod() && shooter instanceof EntityPlayer && MorphApi.getApiImpl().getMorphEntity(shooter.getEntityWorld(), shooter.getName(), Side.SERVER) != null)
         {
-            renderedShooter = MorphApi.getApiImpl().getMorphEntity(shooter.getEntityWorld(), shooter.getCommandSenderName(), Side.SERVER);
+            renderedShooter = MorphApi.getApiImpl().getMorphEntity(shooter.getEntityWorld(), shooter.getName(), Side.SERVER);
         }
 
-        Vec3 look = shooter.getLookVec();
-        Vec3 pos = shooter.getPositionVector().addVector(look.xCoord * 1.3D - look.zCoord * (renderedShooter.width * 0.2D), look.yCoord * 1.3D + (renderedShooter.getEyeHeight() * 0.8D), look.zCoord * 1.3D + look.xCoord * (renderedShooter.width * 0.2D));
+        Vec3d  look       = shooter.getLookVec();
+        Vec3d   pos        = shooter.getPositionVector().addVector(look.xCoord * 1.3D - look.zCoord * (renderedShooter.width * 0.2D), look.yCoord * 1.3D + (renderedShooter.getEyeHeight() * 0.8D), look.zCoord * 1.3D + look.xCoord * (renderedShooter.width * 0.2D));
         double gausAmount = 0.02D;
-        double d0 = rand.nextGaussian() * gausAmount;
-        double d1 = rand.nextGaussian() * gausAmount;
-        double d2 = rand.nextGaussian() * gausAmount;
+        double d0         = rand.nextGaussian() * gausAmount;
+        double d1         = rand.nextGaussian() * gausAmount;
+        double d2         = rand.nextGaussian() * gausAmount;
 
         setPosition(pos.xCoord, pos.yCoord, pos.zCoord);
         double mag = shooter instanceof EntityWolf ? 0.15D : 0.4D;
@@ -107,15 +113,15 @@ public class EntityBee extends Entity
 
         if(!worldObj.isRemote)
         {
-            Vec3 var17 = new Vec3(this.posX, this.posY, this.posZ);
-            Vec3 var3 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
-            MovingObjectPosition mop = this.worldObj.rayTraceBlocks(var17, var3, false, true, false);
-            var17 = new Vec3(this.posX, this.posY, this.posZ);
-            var3 = new Vec3(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            Vec3d          var17 = new Vec3d(this.posX, this.posY, this.posZ);
+            Vec3d          var3  = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
+            RayTraceResult rtr   = this.worldObj.rayTraceBlocks(var17, var3, false, true, false);
+            var17 = new Vec3d(this.posX, this.posY, this.posZ);
+            var3 = new Vec3d(this.posX + this.motionX, this.posY + this.motionY, this.posZ + this.motionZ);
 
-            if(mop != null)
+            if(rtr != null)
             {
-                var3 = new Vec3(mop.hitVec.xCoord, mop.hitVec.yCoord, mop.hitVec.zCoord);
+                var3 = new Vec3d(rtr.hitVec.xCoord, rtr.hitVec.yCoord, rtr.hitVec.zCoord);
             }
 
             Entity collidedEnt = null;
@@ -136,8 +142,8 @@ public class EntityBee extends Entity
                 if(var10.canBeCollidedWith())
                 {
                     var11 = 0.3F;
-                    AxisAlignedBB var12 = var10.getEntityBoundingBox().expand((double)var11, (double)var11, (double)var11);
-                    MovingObjectPosition var13 = var12.calculateIntercept(var17, var3);
+                    AxisAlignedBB        var12 = var10.getEntityBoundingBox().expand((double)var11, (double)var11, (double)var11);
+                    RayTraceResult var13 = var12.calculateIntercept(var17, var3);
 
                     if(var13 != null)
                     {
@@ -176,7 +182,7 @@ public class EntityBee extends Entity
                 setDead();
                 return;
             }
-            else if(mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK)
+            else if(rtr != null && rtr.typeOfHit == RayTraceResult.Type.BLOCK)
             {
                 setDead();
                 return;
@@ -229,15 +235,16 @@ public class EntityBee extends Entity
 
 
     @Override
-    public void setInPortal()
+    public void setPortal(BlockPos pos)
     {
         setDead();
     }
 
     @Override
-    public void travelToDimension(int dimensionId)
+    public Entity changeDimension(int dimensionId)
     {
         setDead();
+        return this;
     }
 
     @Override

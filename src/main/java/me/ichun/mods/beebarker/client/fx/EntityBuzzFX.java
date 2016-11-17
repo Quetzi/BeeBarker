@@ -1,9 +1,9 @@
 package me.ichun.mods.beebarker.client.fx;
 
-import net.minecraft.client.particle.EntitySmokeFX;
+import net.minecraft.client.particle.ParticleSmokeNormal;
 import net.minecraft.world.World;
 
-public class EntityBuzzFX extends EntitySmokeFX
+public class EntityBuzzFX extends ParticleSmokeNormal
 {
     public EntityBuzzFX(World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double motionX, double motionY, double motionZ)
     {

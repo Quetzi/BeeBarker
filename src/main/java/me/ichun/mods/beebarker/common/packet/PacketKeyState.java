@@ -5,7 +5,7 @@ import me.ichun.mods.beebarker.common.BeeBarker;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
-import us.ichun.mods.ichunutil.common.core.network.AbstractPacket;
+import me.ichun.mods.ichunutil.common.core.network.AbstractPacket;
 
 public class PacketKeyState extends AbstractPacket
 {
@@ -21,21 +21,21 @@ public class PacketKeyState extends AbstractPacket
     }
 
     @Override
-    public void writeTo(ByteBuf buffer, Side side)
+    public void writeTo(ByteBuf buffer)
     {
         ByteBufUtils.writeUTF8String(buffer, name);
         buffer.writeBoolean(add);
     }
 
     @Override
-    public void readFrom(ByteBuf buffer, Side side)
+    public void readFrom(ByteBuf buffer)
     {
         name = ByteBufUtils.readUTF8String(buffer);
         add = buffer.readBoolean();
     }
 
     @Override
-    public void execute(Side side, EntityPlayer player)
+    public AbstractPacket execute(Side side, EntityPlayer player)
     {
         if(add)
         {
@@ -48,5 +48,12 @@ public class PacketKeyState extends AbstractPacket
         {
             BeeBarker.proxy.tickHandlerClient.pressState.remove(name);
         }
+        return this;
+    }
+
+    @Override
+    public Side receivingSide()
+    {
+        return Side.SERVER;
     }
 }

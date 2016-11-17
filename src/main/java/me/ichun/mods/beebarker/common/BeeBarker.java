@@ -6,6 +6,10 @@ import me.ichun.mods.beebarker.common.core.Config;
 import me.ichun.mods.beebarker.common.packet.PacketBark;
 import me.ichun.mods.beebarker.common.packet.PacketKeyState;
 import me.ichun.mods.beebarker.common.packet.PacketSpawnParticles;
+import me.ichun.mods.ichunutil.common.core.config.ConfigHandler;
+import me.ichun.mods.ichunutil.common.core.network.PacketChannel;
+import me.ichun.mods.ichunutil.common.iChunUtil;
+import me.ichun.mods.ichunutil.common.module.update.UpdateChecker;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
@@ -13,23 +17,18 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
-import us.ichun.mods.ichunutil.common.core.config.ConfigHandler;
-import us.ichun.mods.ichunutil.common.core.network.ChannelHandler;
-import us.ichun.mods.ichunutil.common.core.network.PacketChannel;
-import us.ichun.mods.ichunutil.common.core.updateChecker.ModVersionChecker;
-import us.ichun.mods.ichunutil.common.core.updateChecker.ModVersionInfo;
-import us.ichun.mods.ichunutil.common.iChunUtil;
 
-@Mod(modid = BeeBarker.MOD_NAME, name = BeeBarker.MOD_NAME,
+@Mod(modid = BeeBarker.MOD_NAME,
+        name = BeeBarker.MOD_NAME,
         version = BeeBarker.VERSION,
-        guiFactory = "us.ichun.mods.ichunutil.common.core.config.GenericModGuiFactory",
-        dependencies = "required-after:iChunUtil@[" + iChunUtil.versionMC +".4.0," + (iChunUtil.versionMC + 1) + ".0.0)",
-        acceptableRemoteVersions = "[" + iChunUtil.versionMC +".0.0," + iChunUtil.versionMC + ".1.0)"
+        guiFactory = "me.ichun.mods.ichunutil.common.core.config.GenericModGuiFactory",
+        dependencies = "required-after:iChunUtil@[" + iChunUtil.VERSION_OF_MC +".4.0," + (iChunUtil.VERSION_OF_MC + 1) + ".0.0)",
+        acceptableRemoteVersions = "[" + iChunUtil.VERSION_OF_MC +".0.0," + iChunUtil.VERSION_OF_MC + ".1.0)"
 )
 public class BeeBarker
 {
     public static final String MOD_NAME = "BeeBarker";
-    public static final String VERSION = iChunUtil.versionMC + ".0.1";
+    public static final String VERSION = iChunUtil.VERSION_OF_MC + ".0.1";
 
     @Mod.Instance(MOD_NAME)
     public static BeeBarker instance;
@@ -52,9 +51,9 @@ public class BeeBarker
 
         proxy.preInit();
 
-        channel = ChannelHandler.getChannelHandlers(MOD_NAME, PacketBark.class, PacketSpawnParticles.class, PacketKeyState.class);
+        channel = new PacketChannel(MOD_NAME, PacketBark.class, PacketSpawnParticles.class, PacketKeyState.class);
 
-        ModVersionChecker.register_iChunMod(new ModVersionInfo(MOD_NAME, iChunUtil.versionOfMC, VERSION, false));
+        UpdateChecker.registerMod(new UpdateChecker.ModVersionInfo(MOD_NAME, iChunUtil.VERSION_OF_MC, VERSION, false));
     }
 
     @Mod.EventHandler

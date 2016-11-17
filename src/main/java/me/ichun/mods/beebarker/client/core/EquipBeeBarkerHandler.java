@@ -1,11 +1,11 @@
 package me.ichun.mods.beebarker.client.core;
 
 import me.ichun.mods.beebarker.common.BeeBarker;
+import me.ichun.mods.ichunutil.client.render.item.ItemRenderingHelper;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.ItemStack;
-import us.ichun.mods.ichunutil.client.core.TickHandlerClient;
 
-public class EquipBeeBarkerHandler implements TickHandlerClient.SwingProofHandler.IItemEquippedHandler
+public class EquipBeeBarkerHandler implements ItemRenderingHelper.SwingProofHandler.IItemEquippedHandler
 {
     @Override
     public void handleEquip(EntityPlayerSP player, ItemStack stack)
